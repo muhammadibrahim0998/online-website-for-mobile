@@ -1,10 +1,9 @@
-// iPhone.jsx
 import React, { useState, useContext } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { CartContext } from "../context/CartContext"; // ✅ Import context
+import { CartContext } from "../../../src/components/context/CartContext";
 
-const initialProducts = [
+const products = [
   {
     id: 1,
     name: "iPhone 12",
@@ -121,58 +120,52 @@ function Iphone() {
 
   const handleAddToCart = async (product) => {
     try {
-      addToCart(product);
-      alert(`${product.name} added to cart`);
       setLoading(true);
-
-      await axios.post("http://localhost:5000/api/iphones", {
-        name: product.name,
-        price: product.price,
-        description: product.description,
-        image: product.image,
-      });
-
-      setLoading(false);
-      setSelectedProduct(null);
+      addToCart(product);
+      await axios.post("http://localhost:5000/api/iphones", product);
+      alert(`${product.name} added to cart successfully!`);
     } catch (err) {
       console.error(err);
-      setLoading(false);
       alert("Failed to add product");
+    } finally {
+      setLoading(false);
+      setSelectedProduct(null);
     }
   };
 
   return (
     <div className="container py-4">
+      {/* ✅ Title Section */}
       <div className="text-center mb-4">
-        <h1 className="fw-bold">iPhones</h1>
+        <h1 className="fw-bold">🍎 iPhone Collection</h1>
         <p className="text-muted">
-          Explore iPhone models with best camera, battery, and performance.
+          Explore the latest and classic iPhone models in one place.
         </p>
       </div>
 
-      <div className="row">
-        {initialProducts.map((p) => (
-          <div key={p.id} className="col-md-4 col-sm-6 mb-4">
+      {/* ✅ Product Grid */}
+      <div className="row g-4">
+        {products.map((p) => (
+          <div key={p.id} className="col-lg-3 col-md-4 col-sm-6">
             <div
-              className="card shadow-sm h-100 border-0"
-              style={{ cursor: "pointer" }}
+              className="card h-100 shadow-sm border-0 product-card"
               onClick={() => handleProductClick(p)}
             >
-              <img
-                src={p.image}
-                alt={p.name}
-                className="card-img-top"
-                style={{ height: "250px", objectFit: "cover" }}
-              />
-              <div className="card-body text-center">
-                <h6 className="fw-bold">{p.name}</h6>
-                <p className="text-primary fw-bold">{p.price}</p>
+              <div className="image-container">
+                <img src={p.image} alt={p.name} className="img-fluid" />
+              </div>
+              <div className="card-body text-center d-flex flex-column">
+                <h6 className="fw-semibold mb-2">{p.name}</h6>
+                <p className="text-primary fw-bold mb-3">{p.price}</p>
                 <button
-                  className="btn btn-primary w-100"
-                  onClick={() => handleAddToCart(p)}
+                  className="btn btn-dark mt-auto rounded-pill"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleAddToCart(p);
+                  }}
                   disabled={loading}
                 >
-                  {loading ? "Adding..." : "Add to Cart"}
+                  {loading ? "Adding..." : "🛒 Add to Cart"}
                 </button>
               </div>
             </div>
@@ -180,17 +173,16 @@ function Iphone() {
         ))}
       </div>
 
+      {/* ✅ Modal */}
       {selectedProduct && (
         <div
-          className="modal show fade d-block"
-          tabIndex="-1"
-          role="dialog"
-          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+          className="modal fade show d-block"
+          style={{ backgroundColor: "rgba(0,0,0,0.6)" }}
         >
-          <div className="modal-dialog modal-md" role="document">
-            <div className="modal-content p-3">
-              <div className="modal-header">
-                <h5 className="modal-title">{selectedProduct.name}</h5>
+          <div className="modal-dialog modal-dialog-centered modal-lg">
+            <div className="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+              <div className="modal-header border-0">
+                <h5 className="modal-title fw-bold">{selectedProduct.name}</h5>
                 <button
                   type="button"
                   className="btn-close"
@@ -202,29 +194,62 @@ function Iphone() {
                   src={selectedProduct.image}
                   alt={selectedProduct.name}
                   className="img-fluid mb-3"
-                  style={{ maxHeight: "250px", objectFit: "cover" }}
+                  style={{ maxHeight: "300px", objectFit: "contain" }}
                 />
-                <p>{selectedProduct.description}</p>
+                <p className="text-muted">{selectedProduct.description}</p>
                 <h4 className="text-primary fw-bold">
                   {selectedProduct.price}
                 </h4>
+              </div>
+              <div className="modal-footer border-0">
                 <button
-                  className="btn btn-primary w-100"
+                  className="btn btn-secondary rounded-pill"
+                  onClick={handleClose}
+                >
+                  Close
+                </button>
+                <button
+                  className="btn btn-dark rounded-pill"
                   onClick={() => handleAddToCart(selectedProduct)}
                   disabled={loading}
                 >
-                  {loading ? "Adding..." : "Add to Cart"}
-                </button>
-              </div>
-              <div className="modal-footer">
-                <button className="btn btn-secondary" onClick={handleClose}>
-                  Close
+                  {loading ? "Adding..." : "🛒 Add to Cart"}
                 </button>
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* ✅ Styles */}
+      <style>{`
+        .product-card {
+          cursor: pointer;
+          transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .product-card:hover {
+          transform: translateY(-6px);
+          box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .image-container {
+          height: 230px;
+          background: #f8f9fa;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+        }
+        .image-container img {
+          max-width: 100%;
+          max-height: 100%;
+          object-fit: contain;
+        }
+        @media (max-width: 576px) {
+          .image-container {
+            height: 180px;
+          }
+        }
+      `}</style>
     </div>
   );
 }

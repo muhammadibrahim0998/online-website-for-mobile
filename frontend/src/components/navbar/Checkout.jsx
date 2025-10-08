@@ -1,6 +1,6 @@
 // Checkout.jsx
 import React, { useContext, useState } from "react";
-import { CartContext } from "../context/CartContext";
+import { CartContext } from "../../../src/components/context/CartContext";
 import { Modal, Button, Form } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import axios from "axios";

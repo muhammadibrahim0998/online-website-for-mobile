@@ -1,130 +1,104 @@
-import React from "react";
-import { motion } from "framer-motion";
+import React, { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
 
-// Side Images
-const leftImage =
-  "https://images.unsplash.com/photo-1607936854279-55e8a4c64888?w=500&auto=format&fit=crop&q=60"; // iPhone
-const centerImage =
-  "https://ketchamsupply.com/cdn/shop/files/1323531b30f07701fda43e12258fca2f-removebg-preview.png?v=1719323918&width=352";
-const rightImage =
-  "https://images.unsplash.com/photo-1607936854279-55e8a4c64888?w=500&auto=format&fit=crop&q=60"; // Samsung
-
-// Demo Mobiles Array (100+ items)
-const mobiles = Array.from({ length: 100 }, (_, i) => ({
-  id: i + 1,
-  name: i % 3 === 0 ? "iPhone" : i % 3 === 1 ? "Samsung" : "Vivo",
-  price: `$${(300 + i * 5).toFixed(2)}`,
-  description: "Stylish mobile with modern design and performance.",
-  image:
-    i % 3 === 0
-      ? "https://m.media-amazon.com/images/I/61-r9zOKBCL._AC_SL1500_.jpg" // iPhone
-      : i % 3 === 1
-      ? "https://m.media-amazon.com/images/I/71QE00iB9IL._AC_SL1500_.jpg" // Samsung
-      : "https://m.media-amazon.com/images/I/81UKVHM77GL._AC_SL1500_.jpg", // Vivo
-}));
+const sliderMobiles = [
+  {
+    name: "Google pixel 9 Pro Max",
+    image: "https://m.media-amazon.com/images/I/71SNHONa-XL._AC_UY218_.jpg",
+    price: "$1299",
+    description:
+      "Apple's latest flagship with A17 Bionic chip and titanium frame.",
+  },
+  {
+    name: "Samsung Galaxy S24 Ultra",
+    image: "https://m.media-amazon.com/images/I/51Nt-B+VLfL._AC_UY218_.jpg",
+    price: "$1199",
+    description: "Flagship Samsung with S Pen and 200MP camera.",
+  },
+  {
+    name: "Vivo V29",
+    image: "https://fdn2.gsmarena.com/vv/pics/vivo/vivo-v29-1.jpg",
+    price: "$499",
+    description: "Elegant Vivo with curved display and pro portrait mode.",
+  },
+  {
+    name: "iPhone 17",
+    image: "https://m.media-amazon.com/images/I/61n0lmxP5-L._AC_UY218_.jpg",
+    price: "$999",
+    description: "Smooth performance with cinematic camera mode.",
+  },
+];
 
 function Home() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => (prev + 1) % sliderMobiles.length);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const current = sliderMobiles[currentIndex];
+
   return (
-    <div className="container-fluid py-5 position-relative">
-      {/* Head Section */}
-      <motion.div
-        initial={{ opacity: 0, y: -30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 1 }}
-        className="text-center mb-5"
-      >
-        <h1 className="fw-bold mb-3">Welcome to Mobile World 📱</h1>
-        <p className="text-muted">
-          Discover the latest iPhone, Samsung, and Vivo smartphones with stylish
-          design and performance.
-        </p>
-      </motion.div>
+    <div className="container-fluid p-0">
+      <div style={{ height: "80vh", position: "relative", overflow: "hidden" }}>
+        <AnimatePresence mode="wait">
+          {/* 🔸 Background Blur Layer */}
+          <motion.div
+            key={`bg-${currentIndex}`}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            style={{
+              backgroundImage: `url(${current.image})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center",
+              filter: "blur(20px) brightness(0.4)",
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "100%",
+              height: "100%",
+              zIndex: 0,
+              transform: "scale(1.1)", // little zoom for better blur
+            }}
+          ></motion.div>
 
-      {/* Center Image */}
-      <motion.img
-        src={centerImage}
-        alt="Center Mobile"
-        initial={{ scale: 0.8, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ duration: 1.2 }}
-        style={{
-          display: "block",
-          margin: "0 auto 40px auto",
-          height: "350px",
-        }}
-      />
-
-      {/* Left Image - Floating + Sliding */}
-      <motion.img
-        src={leftImage}
-        alt="Left Mobile"
-        initial={{ x: "-100%", opacity: 0 }}
-        animate={{ x: 0, y: [0, -20, 0], opacity: 1 }}
-        transition={{
-          x: { duration: 1.5, ease: "easeOut" },
-          y: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-          opacity: { duration: 1.5 },
-        }}
-        style={{
-          position: "absolute",
-          left: "2%", // د viewport مطابق فاصله
-          bottom: "10%",
-          height: "220px",
-          maxWidth: "20%",
-          zIndex: 1,
-        }}
-      />
-
-      {/* Right Image - Floating + Sliding */}
-      <motion.img
-        src={rightImage}
-        alt="Right Mobile"
-        initial={{ x: "100%", opacity: 0 }}
-        animate={{ x: 0, y: [0, 20, 0], opacity: 1 }}
-        transition={{
-          x: { duration: 1.5, ease: "easeOut" },
-          y: { duration: 3, repeat: Infinity, ease: "easeInOut" },
-          opacity: { duration: 1.5 },
-        }}
-        style={{
-          position: "absolute",
-          right: "2%",
-          bottom: "10%",
-          height: "220px",
-          maxWidth: "20%",
-          zIndex: 1,
-        }}
-      />
-
-      {/* Mobile Cards Grid */}
-      <div className="container mt-5">
-        <div className="row">
-          {mobiles.map((mobile, index) => (
-            <motion.div
-              key={mobile.id}
-              className="col-md-3 mb-4"
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.02 }}
-            >
-              <div className="card h-100 shadow-sm border-0 rounded-4">
+          {/* 🔸 Foreground Content */}
+          <motion.div
+            key={`content-${currentIndex}`}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.8 }}
+            className="position-absolute top-50 start-50 translate-middle text-center text-white container"
+            style={{ zIndex: 1 }}
+          >
+            <div className="row justify-content-center">
+              <div className="col-10 col-md-6">
                 <img
-                  src={mobile.image}
-                  className="card-img-top p-3"
-                  alt={mobile.name}
-                  style={{ height: "250px", objectFit: "contain" }}
+                  src={current.image}
+                  alt={current.name}
+                  className="img-fluid mb-4"
+                  style={{
+                    maxHeight: "300px",
+                    objectFit: "contain",
+                    filter: "drop-shadow(0 0 10px rgba(0,0,0,0.6))",
+                  }}
                 />
-                <div className="card-body text-center">
-                  <h5 className="card-title">{mobile.name}</h5>
-                  <p className="card-text text-muted">{mobile.description}</p>
-                  <p className="fw-bold">{mobile.price}</p>
-                  <button className="btn btn-primary">Add to Cart 🛒</button>
-                </div>
+                <h1 className="fw-bold mb-3">{current.name}</h1>
+                <p className="mb-3">{current.description}</p>
+                <span className="fw-bold fs-4 bg-primary px-4 py-2 rounded-3 d-inline-block">
+                  {current.price}
+                </span>
               </div>
-            </motion.div>
-          ))}
-        </div>
+            </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
     </div>
   );

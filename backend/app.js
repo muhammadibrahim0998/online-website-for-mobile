@@ -6,9 +6,9 @@ import authRoutes from "./routes/authRoutes.js";
 import iphoneRoutes from "./routes/iphoneRoutes.js";
 import sumsingRoutes from "./routes/sumsingRoutes.js";
 import vivoRoutes from "./routes/vivoRoutes.js";
-
-
-
+import bodyParser from "body-parser";
+import { placeOrder, getOrders } from "./controllers/orderController.js";
+import orderRoutes from "./routes/orderRoutes.js";
 dotenv.config();
 
 const app = express();
@@ -16,14 +16,15 @@ const app = express();
 // ✅ CORS setup
 app.use(cors());
 app.use(express.json());
-
+app.use(bodyParser.json());
 // ✅ Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/iphones", iphoneRoutes);
 app.use("/api/sumsing", sumsingRoutes);
 app.use("/api", vivoRoutes);
-
-
+app.use("/api/orders", orderRoutes);
+app.post("/api/orders", placeOrder);
+app.get("/api/orders", getOrders);
 
 
 
