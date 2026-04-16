@@ -47,7 +47,7 @@ function PlaceOrder() {
           <div className="card p-3 shadow-sm">
             <h5>Order Summary</h5>
             <p>Total Items: {cartItems.length}</p>
-            <p>Total Price: ${getTotal().toFixed(2)}</p>
+            <p>Total Price: Rs.{getTotal().toFixed(2)}</p>
             <button className="btn btn-success w-100" onClick={placeOrder}>
               Place Order
             </button>

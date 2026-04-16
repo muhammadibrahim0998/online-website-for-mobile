@@ -1,9 +1,11 @@
 import React, { createContext, useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
+  const [toast, setToast] = useState({ show: false, message: "" });
 
   // Load cart from localStorage
   useEffect(() => {
@@ -17,6 +19,11 @@ export const CartProvider = ({ children }) => {
     window.dispatchEvent(new Event("cartUpdated"));
   }, [cartItems]);
 
+  const showNotification = (message) => {
+    setToast({ show: true, message });
+    setTimeout(() => setToast({ show: false, message: "" }), 3000);
+  };
+
   // Add product to cart
   const addToCart = (item) => {
     const exist = cartItems.find((x) => x.id === item.id);
@@ -25,6 +32,7 @@ export const CartProvider = ({ children }) => {
     } else {
       setCartItems((prev) => [...prev, { ...item, qty: 1 }]);
     }
+    showNotification(`${item.name} added to cart!`);
   };
 
   // Remove product
@@ -80,6 +88,36 @@ export const CartProvider = ({ children }) => {
       }}
     >
       {children}
+      <AnimatePresence>
+        {toast.show && (
+          <motion.div
+            initial={{ opacity: 0, y: -50, x: "-50%", scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, x: "-50%", scale: 1 }}
+            exit={{ opacity: 0, y: -20, x: "-50%", scale: 0.8, transition: { duration: 0.2 } }}
+            style={{
+              position: "fixed",
+              top: "85px",
+              left: "50%",
+              backgroundColor: "#198754", // Green for success
+              color: "white",
+              padding: "16px 32px",
+              borderRadius: "50px",
+              boxShadow: "0 15px 35px rgba(0,0,0,0.25)",
+              zIndex: 9999,
+              fontWeight: "bold",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px",
+              border: "2px solid rgba(255,255,255,0.3)"
+            }}
+          >
+            <span style={{ fontSize: "20px" }}>✅</span>
+            {toast.message}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
     </CartContext.Provider>
   );
 };
+

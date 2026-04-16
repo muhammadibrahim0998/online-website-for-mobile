@@ -1,130 +1,123 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { motion } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function About() {
-  const [active, setActive] = useState("iphone");
-  const navigate = useNavigate();
+  const [categories, setCategories] = useState({ iphone: [], samsung: [], vivo: [] });
+  const [loading, setLoading] = useState(true);
 
-  // 📌 iPhone Series Data
-    const iphoneData = [
-    { name: "iPhone 13 Pro", desc: "Premium camera and design", img: "https://images.unsplash.com/photo-1679258499439-404f222b3c40?w=300" },
-    { name: "iPhone 12", desc: "Sleek and powerful", img: "https://images.unsplash.com/photo-1574005054503-0c1d9ba84af8?w=500" },
-    { name: "iPhone 11", desc: "Classic and smooth", img: "https://images.unsplash.com/photo-1571964759103-c1dac73416cf?w=500" },
-    { name: "iPhone X", desc: "Iconic notch display", img: "https://images.unsplash.com/photo-1607936854279-55e8a4c64888?w=500" },
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/products");
+        const all = res.data;
+        setCategories({
+          iphone: all.filter(p => p.category === "iphone").slice(0, 4),
+          samsung: all.filter(p => p.category === "samsung").slice(0, 4),
+          vivo: all.filter(p => p.category === "vivo").slice(0, 4),
+        });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
-  // 📌 Samsung Series Data
-  const samsungData = [
-    { name: "Samsung Galaxy S9", desc: "Super AMOLED & power", img: "https://w7.pngwing.com/pngs/784/361/png-transparent-samsung-galaxy-s9-samsung-galaxy-s8-2018-mobile-world-congress-huawei-p20-samsung-thumbnail.png" },
-    { name: "Samsung Note 8", desc: "Stylish design", img: "https://w7.pngwing.com/pngs/640/767/png-transparent-smartphone-feature-phone-samsung-galaxy-note-8-mobile-phone-accessories-samsung-galaxy-s9-gadget-mobile-phone-electric-blue-thumbnail.png" },
-    { name: "Samsung Galaxy A", desc: "Affordable innovation", img: "https://w7.pngwing.com/pngs/2/872/png-transparent-telephone-samsung-t-mobile-4g-smartphone-samsung-gadget-mobile-phone-mobile-phones-thumbnail.png" },
-  ];
-
-  // 📌 Vivo Series Data
-  const vivoData = [
-    { name: "Vivo V29", desc: "Beautiful and powerful", img: "https://fdn2.gsmarena.com/vv/pics/vivo/vivo-v29-1.jpg" },
-    { name: "Vivo X100 Pro", desc: "Flagship experience", img: "https://fdn2.gsmarena.com/vv/pics/vivo/vivo-x100-pro-1.jpg" },
-    { name: "Vivo Y33s", desc: "Affordable and smooth", img: "https://fdn2.gsmarena.com/vv/pics/vivo/vivo-y33s-2.jpg" },
-  ];
-
-  // 📌 Common card layout for all mobiles
-  const MobileCard = ({ category, index, name, desc, img }) => (
-    <div
-      className="col-6 col-sm-4 col-md-3 mb-4"
-      style={{ cursor: "pointer" }}
-      onClick={() => navigate(`/blog/${category}-${index + 1}`)}
-    >
-      <div className="card h-100 shadow-sm border-0">
-        <img
-          src={img}
-          className="card-img-top"
-          alt={name}
-          style={{ height: "180px", objectFit: "cover" }}
-        />
-        <div className="card-body text-center">
-          <h6 className="card-title fw-bold mb-1">{name}</h6>
-          <p className="card-text text-muted small">{desc}</p>
+  const CategorySection = ({ title, data, color }) => (
+    <div className="mb-5 py-4 px-4 rounded-5" style={{ background: `${color}08`, border: `1px solid ${color}15` }}>
+      <div className="d-flex align-items-center mb-4">
+        <div className="p-2 rounded-3 me-3" style={{ background: color }}>
+          <i className="bi bi- phone text-white"></i>
         </div>
+        <h3 className="fw-bold mb-0" style={{ color: color }}>{title}</h3>
+      </div>
+      <div className="row g-4">
+        {data.length > 0 ? data.map((p) => (
+          <div key={p._id} className="col-6 col-md-3">
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="card border-0 shadow-sm h-100 rounded-4 overflow-hidden"
+            >
+              <div className="p-3 text-center bg-light" style={{ height: "140px" }}>
+                <img src={p.image} alt={p.name} className="img-fluid h-100 object-fit-contain" />
+              </div>
+              <div className="card-body p-3 text-center">
+                <h6 className="fw-bold mb-1 small">{p.name}</h6>
+                <div className="text-primary fw-bold small">Rs.{p.price}</div>
+              </div>
+            </motion.div>
+          </div>
+        )) : (
+          <div className="col-12 text-muted small text-center py-3">No products available in this category.</div>
+        )}
       </div>
     </div>
   );
 
-  // 📌 Section Renderer
-  const Section = ({ category, title, text, data }) => (
-    <div className="mb-5">
-      <div className="text-center mb-4">
-        <h2 className="fw-bold">{title}</h2>
-        <p className="text-muted">{text}</p>
-      </div>
-      <div className="row justify-content-center">
-        {data.map((item, index) => (
-          <MobileCard
-            key={index}
-            category={category}
-            index={index}
-            name={item.name}
-            desc={item.desc}
-            img={item.img}
-          />
-        ))}
-      </div>
-    </div>
-  );
+  if (loading) return null;
 
   return (
     <div className="container py-5">
-      <h1 className="text-center fw-bold mb-4">📱 About Our Mobile Collection</h1>
-
-      {/* Category Buttons */}
-      <div className="text-center mb-5">
-        <button
-          className={`btn mx-2 ${active === "iphone" ? "btn-primary" : "btn-outline-primary"}`}
-          onClick={() => setActive("iphone")}
+      {/* Header */}
+      <div className="text-center mb-5 pb-3">
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="display-4 fw-bold mb-3"
         >
-          iPhone
-        </button>
-        <button
-          className={`btn mx-2 ${active === "samsung" ? "btn-success" : "btn-outline-success"}`}
-          onClick={() => setActive("samsung")}
-        >
-          Samsung
-        </button>
-        <button
-          className={`btn mx-2 ${active === "vivo" ? "btn-info" : "btn-outline-info"}`}
-          onClick={() => setActive("vivo")}
-        >
-          Vivo
-        </button>
+          Our <span className="text-primary">Premium</span> Collection
+        </motion.h1>
+        <p className="text-muted mx-auto" style={{ maxWidth: "600px" }}>
+          Explore the best of technology from world-leading brands. We provide 100% genuine mobiles with official warranties.
+        </p>
       </div>
 
-      {/* Active Section */}
-      {active === "iphone" && (
-        <Section
-          category="iphone"
-          title="iPhone Series"
-          text="iPhones are famous for smooth performance, elegant design, and premium experience."
-          data={iphoneData}
-        />
-      )}
+      {/* Sections */}
+      <div className="row">
+        <div className="col-12">
+          <CategorySection title="iPhone Series" data={categories.iphone} color="#000000" />
+          <CategorySection title="Samsung Galaxy" data={categories.samsung} color="#0d6efd" />
+          <CategorySection title="Vivo Smart" data={categories.vivo} color="#0dcaf0" />
+        </div>
+      </div>
 
-      {active === "samsung" && (
-        <Section
-          category="samsung"
-          title="Samsung Series"
-          text="Samsung brings Super AMOLED, innovation, and strong performance."
-          data={samsungData}
-        />
-      )}
+      {/* Company Trust Section */}
+      <div className="row mt-5 g-4">
+        <div className="col-md-4">
+          <div className="text-center p-4">
+            <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex p-3 mb-3">
+              <i className="bi bi-shield-check fs-2"></i>
+            </div>
+            <h5 className="fw-bold">Secured by Stripe</h5>
+            <p className="text-muted small">Your payments are protected with top-tier security standards.</p>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="text-center p-4">
+            <div className="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex p-3 mb-3">
+              <i className="bi bi-truck fs-2"></i>
+            </div>
+            <h5 className="fw-bold">Fast Delivery</h5>
+            <p className="text-muted small">Get your new mobile delivered to your doorstep within 24 hours.</p>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="text-center p-4">
+            <div className="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex p-3 mb-3">
+              <i className="bi bi-award fs-2"></i>
+            </div>
+            <h5 className="fw-bold">Original Brand</h5>
+            <p className="text-muted small">We only sell original phones with valid local & international warranties.</p>
+          </div>
+        </div>
+      </div>
 
-      {active === "vivo" && (
-        <Section
-          category="vivo"
-          title="Vivo Series"
-          text="Vivo mobiles are stylish, affordable, and camera-focused."
-          data={vivoData}
-        />
-      )}
+      <footer className="text-center mt-5 pt-5 border-top text-muted small">
+        © 2026 MobiZone - Ibrahim Mobile Store. All Rights Reserved.
+      </footer>
     </div>
   );
 }
