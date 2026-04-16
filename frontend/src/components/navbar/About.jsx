@@ -1,139 +1,123 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { motion } from "framer-motion";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 function About() {
-  const [active, setActive] = useState("iphone");
+  const [categories, setCategories] = useState({ iphone: [], samsung: [], vivo: [] });
+  const [loading, setLoading] = useState(true);
 
-  // 📌 iPhone Images (13)
-  const iphoneImages = [
-    "https://images.unsplash.com/photo-1679258499439-404f222b3c40?w=300",
-    "https://images.unsplash.com/photo-1574005054503-0c1d9ba84af8?w=500",
-    "https://images.unsplash.com/photo-1571964759103-c1dac73416cf?w=500",
-    "https://images.unsplash.com/photo-1607936854279-55e8a4c64888?w=500",
-    "https://images.unsplash.com/photo-1739816334403-3d8b1eb8ef77?w=500",
-    "https://images.unsplash.com/photo-1664472252707-5ded875aaffe?w=500",
-    "https://images.unsplash.com/photo-1709178295004-893b38ec2a4b?w=500",
-    "https://images.unsplash.com/photo-1630328699543-c054cd3ea0b2?w=500",
-    "https://images.unsplash.com/photo-1630513094315-6fe9a9fdc562?w=500",
-    "https://images.unsplash.com/photo-1572962481805-618aa41b8ebb?w=500",
-    "https://images.unsplash.com/photo-1612827682226-f461037c339a?w=500",
-    "https://images.unsplash.com/photo-1740650698113-33198ad23663?w=500",
-  ];
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get("http://localhost:5000/api/products");
+        const all = res.data;
+        setCategories({
+          iphone: all.filter(p => p.category === "iphone").slice(0, 4),
+          samsung: all.filter(p => p.category === "samsung").slice(0, 4),
+          vivo: all.filter(p => p.category === "vivo").slice(0, 4),
+        });
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, []);
 
-  // 📌 Samsung Images (13) ✅ نوم یې بدل کړم samsungImages
-  const samsungImages = [
-    "https://w7.pngwing.com/pngs/784/361/png-transparent-samsung-galaxy-s9-samsung-galaxy-s8-2018-mobile-world-congress-huawei-p20-samsung-thumbnail.png",
-    "https://w7.pngwing.com/pngs/2/872/png-transparent-telephone-samsung-t-mobile-4g-smartphone-samsung-gadget-mobile-phone-mobile-phones-thumbnail.png",
-    "https://w7.pngwing.com/pngs/272/398/png-transparent-smartphone-android-os-samsung-galaxy-s-cellphone-mobile-phone-cell-phone-mobile-phone-touchscreen-thumbnail.png",
-    "https://w7.pngwing.com/pngs/870/26/png-transparent-iphone-7-mobile-phone-accessories-telephone-samsung-galaxy-s7-car-phone-accessory-miscellaneous-gadget-electronics-thumbnail.png",
-    "https://w7.pngwing.com/pngs/602/46/png-transparent-samsung-galaxy-mobile-phone-accessories-smartphone-battery-charger-phone-case-hd-miscellaneous-gadget-mobile-phone-thumbnail.png",
-    "https://w7.pngwing.com/pngs/906/385/png-transparent-zagg-invisibleshield-screen-protector-screen-protectors-mobile-phone-accessories-samsung-samsung-s8-glass-gadget-mobile-phone-thumbnail.png",
-    "https://w7.pngwing.com/pngs/640/767/png-transparent-smartphone-feature-phone-samsung-galaxy-note-8-mobile-phone-accessories-samsung-galaxy-s9-gadget-mobile-phone-electric-blue-thumbnail.png",
-    "https://w7.pngwing.com/pngs/906/297/png-transparent-pink-samsung-smartphone-collage-samsung-galaxy-s9-samsung-galaxy-s8-2018-mobile-world-congress-smartphone-samsung-s9-purple-gadget-electronics-thumbnail.png",
-    "https://w7.pngwing.com/pngs/121/1017/png-transparent-feature-phone-smartphone-mobile-phone-samsung-electronics-gadget-mobile-phones-thumbnail.png",
-    "https://w7.pngwing.com/pngs/800/79/png-transparent-samsung-galaxy-s8-samsung-galaxy-s7-samsung-gear-mobile-phone-accessories-samsung-electronics-gadget-mobile-phone-case-thumbnail.png",
-    "https://w7.pngwing.com/pngs/902/444/png-transparent-samsung-galaxy-s-plus-tecno-mobile-android-smartphone-amoled-gionee-f103-pro-gadget-mobile-phone-3g-thumbnail.png",
-    "https://w7.pngwing.com/pngs/8/780/png-transparent-smartphone-feature-phone-samsung-galaxy-s9-cellular-network-samsung-s9-gadget-mobile-phone-mobile-phones-thumbnail.png",
-  ];
-
-  // 📌 Vivo Images (13)
-  const vivoImages = [
-    "https://tse3.mm.bing.net/th/id/OIP.MeWA2QqMzyYfPLhoYSzE2AHaHa?pid=Api&P=0&h=220",
-    "https://fdn2.gsmarena.com/vv/pics/vivo/vivo-v29-1.jpg",
-    "https://tse3.mm.bing.net/th/id/OIP.3D5kDvl0BQ_LUIbDmxCWowHaHa?pid=Api&P=0&h=220",
-    "https://tse4.mm.bing.net/th/id/OIP.EBqGN5JGofZilpu3m92iRQHaHa?pid=Api&P=0&h=220",
-    "https://fdn2.gsmarena.com/vv/pics/vivo/vivo-x100-pro-1.jpg",
-    "https://fdn2.gsmarena.com/vv/pics/vivo/vivo-y02t-1.jpg",
-    "https://fdn2.gsmarena.com/vv/pics/vivo/vivo-y33s-2.jpg",
-    "https://fdn2.gsmarena.com/vv/pics/vivo/vivo-v20-1.jpg",
-    "https://fdn2.gsmarena.com/vv/pics/vivo/vivo-x70-pro-1.jpg",
-    "https://fdn2.gsmarena.com/vv/pics/vivo/vivo-s18-1.jpg",
-    "https://fdn2.gsmarena.com/vv/pics/vivo/vivo-y22-1.jpg",
-    "https://fdn2.gsmarena.com/vv/pics/vivo/vivo-x80-1.jpg",
-    "https://up.yimg.com/ib/th/id/OIP.3UvA4muSJoH3QHUXjR1aIgHaHa?pid=Api&rs=1&c=1&qlt=95&w=105&h=105",
-  ];
-
-  // 📌 Helper section
-  const Section = ({ title, text, images }) => (
-    <div className="row align-items-center mb-5">
-      <div className="col-md-5">
-        <h2 className="fw-bold">{title}</h2>
-        <p className="text-muted">{text}</p>
-      </div>
-      <div className="col-md-7">
-        <div className="d-flex flex-wrap gap-3 justify-content-center">
-          {images.map((img, i) => (
-            <img
-              key={i}
-              src={img}
-              alt={`${title} ${i + 1}`}
-              className="rounded shadow"
-              style={{ width: "120px", height: "160px", objectFit: "cover" }}
-            />
-          ))}
+  const CategorySection = ({ title, data, color }) => (
+    <div className="mb-5 py-4 px-4 rounded-5" style={{ background: `${color}08`, border: `1px solid ${color}15` }}>
+      <div className="d-flex align-items-center mb-4">
+        <div className="p-2 rounded-3 me-3" style={{ background: color }}>
+          <i className="bi bi- phone text-white"></i>
         </div>
+        <h3 className="fw-bold mb-0" style={{ color: color }}>{title}</h3>
+      </div>
+      <div className="row g-4">
+        {data.length > 0 ? data.map((p) => (
+          <div key={p._id} className="col-6 col-md-3">
+            <motion.div 
+              whileHover={{ y: -5 }}
+              className="card border-0 shadow-sm h-100 rounded-4 overflow-hidden"
+            >
+              <div className="p-3 text-center bg-light" style={{ height: "140px" }}>
+                <img src={p.image} alt={p.name} className="img-fluid h-100 object-fit-contain" />
+              </div>
+              <div className="card-body p-3 text-center">
+                <h6 className="fw-bold mb-1 small">{p.name}</h6>
+                <div className="text-primary fw-bold small">Rs.{p.price}</div>
+              </div>
+            </motion.div>
+          </div>
+        )) : (
+          <div className="col-12 text-muted small text-center py-3">No products available in this category.</div>
+        )}
       </div>
     </div>
   );
 
+  if (loading) return null;
+
   return (
     <div className="container py-5">
-      <h1 className="text-center fw-bold mb-4">
-        📱 About Our Mobile Collection
-      </h1>
-
-      {/* Buttons */}
-      <div className="text-center mb-4">
-        <button
-          className={`btn mx-2 ${
-            active === "iphone" ? "btn-primary" : "btn-outline-primary"
-          }`}
-          onClick={() => setActive("iphone")}
+      {/* Header */}
+      <div className="text-center mb-5 pb-3">
+        <motion.h1 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="display-4 fw-bold mb-3"
         >
-          iPhone
-        </button>
-        <button
-          className={`btn mx-2 ${
-            active === "samsung" ? "btn-success" : "btn-outline-success"
-          }`}
-          onClick={() => setActive("samsung")}
-        >
-          Sumsing
-        </button>
-        <button
-          className={`btn mx-2 ${
-            active === "vivo" ? "btn-info" : "btn-outline-info"
-          }`}
-          onClick={() => setActive("vivo")}
-        >
-          Vivo
-        </button>
+          Our <span className="text-primary">Premium</span> Collection
+        </motion.h1>
+        <p className="text-muted mx-auto" style={{ maxWidth: "600px" }}>
+          Explore the best of technology from world-leading brands. We provide 100% genuine mobiles with official warranties.
+        </p>
       </div>
 
       {/* Sections */}
-      {active === "iphone" && (
-        <Section
-          title="iPhone Series"
-          text="iPhones are famous for their smooth performance, elegant design, and premium experience. Here are the latest iPhones in our collection."
-          images={iphoneImages}
-        />
-      )}
+      <div className="row">
+        <div className="col-12">
+          <CategorySection title="iPhone Series" data={categories.iphone} color="#000000" />
+          <CategorySection title="Samsung Galaxy" data={categories.samsung} color="#0d6efd" />
+          <CategorySection title="Vivo Smart" data={categories.vivo} color="#0dcaf0" />
+        </div>
+      </div>
 
-      {active === "samsung" && (
-        <Section
-          title="Samsung Series"
-          text="Samsung mobiles bring innovation, Super AMOLED displays, and high-end cameras. Check out the latest Samsung devices."
-          images={samsungImages}
-        />
-      )}
+      {/* Company Trust Section */}
+      <div className="row mt-5 g-4">
+        <div className="col-md-4">
+          <div className="text-center p-4">
+            <div className="bg-primary bg-opacity-10 text-primary rounded-circle d-inline-flex p-3 mb-3">
+              <i className="bi bi-shield-check fs-2"></i>
+            </div>
+            <h5 className="fw-bold">Secured by Stripe</h5>
+            <p className="text-muted small">Your payments are protected with top-tier security standards.</p>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="text-center p-4">
+            <div className="bg-success bg-opacity-10 text-success rounded-circle d-inline-flex p-3 mb-3">
+              <i className="bi bi-truck fs-2"></i>
+            </div>
+            <h5 className="fw-bold">Fast Delivery</h5>
+            <p className="text-muted small">Get your new mobile delivered to your doorstep within 24 hours.</p>
+          </div>
+        </div>
+        <div className="col-md-4">
+          <div className="text-center p-4">
+            <div className="bg-info bg-opacity-10 text-info rounded-circle d-inline-flex p-3 mb-3">
+              <i className="bi bi-award fs-2"></i>
+            </div>
+            <h5 className="fw-bold">Original Brand</h5>
+            <p className="text-muted small">We only sell original phones with valid local & international warranties.</p>
+          </div>
+        </div>
+      </div>
 
-      {active === "vivo" && (
-        <Section
-          title="Vivo Series"
-          text="Vivo mobiles are stylish, budget-friendly, and known for their cameras. Explore the latest Vivo smartphones."
-          images={vivoImages}
-        />
-      )}
+      <footer className="text-center mt-5 pt-5 border-top text-muted small">
+        © 2026 MobiZone - Ibrahim Mobile Store. All Rights Reserved.
+      </footer>
     </div>
   );
 }
