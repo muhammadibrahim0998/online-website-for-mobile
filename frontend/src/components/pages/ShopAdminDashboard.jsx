@@ -13,13 +13,84 @@ const ShopAdminDashboard = () => {
   const [formData, setFormData] = useState({
     name: "", price: "", description: "", category: "iphone", stock: 10
   });
-  const [activeTab, setActiveTab] = useState("products");
+  const [activeTab, setActiveTab] = useState("dashboard");
   const [message, setMessage] = useState("");
+  const [salesStats, setSalesStats] = useState({ today: 0, month: 0, year: 0, totalOrders: 0 });
+  const [catStats, setCatStats] = useState({
+    iphone: { today: 0, month: 0, year: 0, stock: 0 },
+    samsung: { today: 0, month: 0, year: 0, stock: 0 },
+    vivo: { today: 0, month: 0, year: 0, stock: 0 }
+  });
 
   useEffect(() => {
     fetchMyProducts();
     fetchOrders();
   }, []);
+
+  useEffect(() => {
+    if ((orders.length >= 0 || products.length >= 0) && user) {
+      const now = new Date();
+      const todayStr = now.toLocaleDateString();
+      const curMonth = now.getMonth();
+      const curYear = now.getFullYear();
+
+      let totals = { today: 0, month: 0, year: 0 };
+      let categories = {};
+
+      // Filter products that belong to this admin/shop
+      const myProducts = products.filter(p => p.addedBy === user._id || p.user === user._id);
+
+      // Calculate Real-time Stock for MY products only
+      myProducts.forEach(p => {
+        const cat = p.category;
+        if (cat) {
+          if (!categories[cat]) {
+            categories[cat] = { today: 0, month: 0, year: 0, stock: 0 };
+          }
+          categories[cat].stock += 1;
+        }
+      });
+
+      // Calculate Sales Stats from orders that contain MY products
+      orders.forEach(o => {
+        if (o.paymentStatus === "paid") {
+          const oDate = new Date(o.createdAt);
+          const isToday = oDate.toLocaleDateString() === todayStr;
+          const isMonth = oDate.getMonth() === curMonth && oDate.getFullYear() === curYear;
+          const isYear = oDate.getFullYear() === curYear;
+
+          let orderHasMyProduct = false;
+          let myOrderTotal = 0;
+
+          o.items.forEach(item => {
+            const prod = myProducts.find(p => p._id === item.productId || p.name === item.name);
+            if (prod) {
+              orderHasMyProduct = true;
+              const itemTotal = (item.price * item.quantity);
+              myOrderTotal += itemTotal;
+
+              const cat = prod.category;
+              if (cat && categories[cat]) {
+                const qty = item.quantity || 1;
+                if (isYear) categories[cat].year += qty;
+                if (isMonth) categories[cat].month += qty;
+                if (isToday) categories[cat].today += qty;
+              }
+            }
+          });
+
+          if (orderHasMyProduct) {
+            if (isYear) totals.year += myOrderTotal;
+            if (isMonth) totals.month += myOrderTotal;
+            if (isToday) totals.today += myOrderTotal;
+          }
+        }
+      });
+
+      setSalesStats({ ...totals, totalOrders: orders.filter(o => o.items.some(i => myProducts.some(p => p._id === i.productId))).length });
+      setCatStats(categories);
+    }
+  }, [orders, products, user]);
 
   const fetchMyProducts = async () => {
     try {
@@ -41,7 +112,7 @@ const ShopAdminDashboard = () => {
 
   const handleAddProduct = async (e) => {
     e.preventDefault();
-    
+
     if (!file && !isEditing) {
       setMessage("Please select an image file.");
       return;
@@ -59,7 +130,7 @@ const ShopAdminDashboard = () => {
       let res;
       if (isEditing) {
         res = await axios.put(`http://localhost:5000/api/products/${editId}`, data, {
-          headers: { 
+          headers: {
             "Content-Type": "multipart/form-data",
             "Authorization": `Bearer ${localStorage.getItem("token")}`
           }
@@ -67,14 +138,14 @@ const ShopAdminDashboard = () => {
         setMessage("Product updated successfully!");
       } else {
         res = await axios.post("http://localhost:5000/api/products", data, {
-          headers: { 
+          headers: {
             "Content-Type": "multipart/form-data",
             "Authorization": `Bearer ${localStorage.getItem("token")}`
           }
         });
         setMessage(res.data.message);
       }
-      
+
       resetForm();
       fetchMyProducts();
     } catch (err) {
@@ -125,21 +196,99 @@ const ShopAdminDashboard = () => {
       </div>
 
       <div className="text-center mb-5">
-        <div className="btn-group shadow-sm">
-          <button 
-            className={`btn px-4 ${activeTab === "products" ? "btn-success" : "btn-outline-success"}`}
+        <div className="btn-group shadow-sm p-1 bg-light rounded-pill">
+          <button
+            className={`btn rounded-pill px-4 ${activeTab === "dashboard" ? "btn-success shadow-sm" : "btn-light"}`}
+            onClick={() => setActiveTab("dashboard")}
+          >
+            <i className="bi bi-graph-up-arrow me-2"></i> Sales Overview
+          </button>
+          <button
+            className={`btn rounded-pill px-4 ${activeTab === "products" ? "btn-success shadow-sm" : "btn-light"}`}
             onClick={() => setActiveTab("products")}
           >
-            Manage Products
+            <i className="bi bi-box-seam me-2"></i> Manage Products
           </button>
-          <button 
-            className={`btn px-4 ${activeTab === "orders" ? "btn-success" : "btn-outline-success"}`}
+          <button
+            className={`btn rounded-pill px-4 ${activeTab === "orders" ? "btn-success shadow-sm" : "btn-light"}`}
             onClick={() => setActiveTab("orders")}
           >
-            Store Orders
+            <i className="bi bi-cart-check me-2"></i> Sales History
           </button>
         </div>
       </div>
+
+      {activeTab === "dashboard" && (
+        <>
+          <div className="row g-4 mb-5">
+            <div className="col-md-3">
+              <div className="card shadow-sm border-0 p-4 text-center bg-white rounded-4 border-start border-primary border-5">
+                <div className="text-muted small fw-bold mb-1">TODAY'S SALES</div>
+                <h3 className="fw-bold mb-0">Rs.{salesStats.today.toLocaleString()}</h3>
+              </div>
+            </div>
+            <div className="col-md-3">
+              <div className="card shadow-sm border-0 p-4 text-center bg-white rounded-4 border-start border-success border-5">
+                <div className="text-muted small fw-bold mb-1">MONTHLY SALES</div>
+                <h3 className="fw-bold mb-0">Rs.{salesStats.month.toLocaleString()}</h3>
+              </div>
+            </div>
+            <div className="col-md-3">
+              <div className="card shadow-sm border-0 p-4 text-center bg-white rounded-4 border-start border-info border-5">
+                <div className="text-muted small fw-bold mb-1">YEARLY SALES</div>
+                <h3 className="fw-bold mb-0">Rs.{salesStats.year.toLocaleString()}</h3>
+              </div>
+            </div>
+            <div className="col-md-3">
+              <div className="card shadow-sm border-0 p-4 text-center bg-white rounded-4 border-start border-dark border-5">
+                <div className="text-muted small fw-bold mb-1">TOTAL ORDERS</div>
+                <h3 className="fw-bold mb-0">{salesStats.totalOrders}</h3>
+              </div>
+            </div>
+          </div>
+
+          {/* Category-wise Record Header */}
+          <div className="row mb-4">
+            <div className="col-12">
+              <h4 className="fw-bold border-bottom pb-2">Category Performance</h4>
+            </div>
+          </div>
+
+          <div className="row g-4 mb-5">
+            {Object.keys(catStats).map((cat) => (
+              <div key={cat} className="col-md-4">
+                <div className="card shadow-sm border-0 overflow-hidden rounded-4 h-100">
+                  <div className={`p-3 text-center text-white fw-bold text-uppercase ${cat.toLowerCase() === "iphone" ? "bg-dark" : cat.toLowerCase() === "samsung" ? "bg-primary" : "bg-info"}`}>
+                    {cat} Performance
+                  </div>
+                  <div className="card-body p-0">
+                    <div className="d-flex justify-content-around text-center py-3 bg-light border-bottom">
+                      <div>
+                        <div className="text-muted small fw-bold">TOTAL STOCK</div>
+                        <h4 className="fw-bold mb-0 text-success">{catStats[cat].stock}</h4>
+                      </div>
+                    </div>
+                    <div className="p-3">
+                      <div className="d-flex justify-content-between mb-2">
+                        <span className="text-muted small">Today's Sales:</span>
+                        <span className="fw-bold">{catStats[cat].today} units</span>
+                      </div>
+                      <div className="d-flex justify-content-between mb-2">
+                        <span className="text-muted small">This Month:</span>
+                        <span className="fw-bold">{catStats[cat].month} units</span>
+                      </div>
+                      <div className="d-flex justify-content-between mb-0">
+                        <span className="text-muted small">This Year:</span>
+                        <span className="fw-bold">{catStats[cat].year} units</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
 
       {activeTab === "products" ? (
         <div className="row g-4">
@@ -151,27 +300,27 @@ const ShopAdminDashboard = () => {
                 <div className="mb-3">
                   <label className="form-label small fw-bold">Title</label>
                   <input type="text" className="form-control" required
-                    value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                    value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
                 </div>
                 <div className="mb-3">
                   <label className="form-label small fw-bold">Price (Rs.)</label>
                   <input type="number" className="form-control" required
-                    value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} />
+                    value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} />
                 </div>
                 <div className="mb-3">
                   <label className="form-label small fw-bold">Product Image {isEditing && "(Optional)"}</label>
-                  <input 
+                  <input
                     id="imageInput"
-                    type="file" 
-                    className="form-control" 
+                    type="file"
+                    className="form-control"
                     accept="image/*"
-                    onChange={(e) => setFile(e.target.files[0])} 
+                    onChange={(e) => setFile(e.target.files[0])}
                     required={!isEditing}
                   />
                 </div>
                 <div className="mb-3">
                   <label className="form-label small fw-bold">Category</label>
-                  <select className="form-select" value={formData.category} onChange={(e) => setFormData({...formData, category: e.target.value})}>
+                  <select className="form-select" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })}>
                     <option value="iphone">iPhone</option>
                     <option value="samsung">Samsung</option>
                     <option value="vivo">Vivo</option>
@@ -180,7 +329,7 @@ const ShopAdminDashboard = () => {
                 <div className="mb-4">
                   <label className="form-label small fw-bold">Description</label>
                   <textarea className="form-control" rows="3" required
-                    value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})}></textarea>
+                    value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })}></textarea>
                 </div>
                 <div className="d-flex gap-2">
                   <button type="submit" className={`btn w-100 py-2 fw-bold ${isEditing ? "btn-warning" : "btn-success"}`}>
@@ -211,7 +360,7 @@ const ShopAdminDashboard = () => {
                   <tbody>
                     {products.map((p) => (
                       <tr key={p._id}>
-                        <td><img src={p.image} alt={p.name} style={{width: "40px", height: "40px", objectFit: "contain"}} className="rounded border bg-light" /></td>
+                        <td><img src={p.image} alt={p.name} style={{ width: "40px", height: "40px", objectFit: "contain" }} className="rounded border bg-light" /></td>
                         <td className="fw-semibold">{p.name}</td>
                         <td className="text-primary fw-bold">Rs.{p.price}</td>
                         <td><span className="badge bg-secondary opacity-75">{p.category}</span></td>
@@ -222,9 +371,6 @@ const ShopAdminDashboard = () => {
                             </button>
                             <button className="btn btn-sm btn-outline-warning" title="Edit" onClick={() => handleEdit(p)}>
                               <i className="bi bi-pencil"></i>
-                            </button>
-                            <button className="btn btn-sm btn-outline-danger" title="Delete" onClick={() => handleDeleteProduct(p._id)}>
-                              <i className="bi bi-trash"></i>
                             </button>
                           </div>
                         </td>

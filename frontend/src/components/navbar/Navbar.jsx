@@ -29,7 +29,7 @@ function Navbar() {
   }, [cartItems]);
 
   const filtered = products.filter((p) =>
-    p.name.toLowerCase().includes(query.toLowerCase())
+    p.name.toLowerCase().includes(query.toLowerCase()),
   );
 
   const handleLogout = () => {
@@ -55,23 +55,50 @@ function Navbar() {
     <>
       <nav className="navbar navbar-expand-lg sticky-top glassy-nav py-2">
         <div className="container-fluid px-lg-5">
-
           {/* LEFT: Logo and Nav Links */}
           <div className="d-flex align-items-center gap-4">
             <Link className="navbar-brand d-flex align-items-center" to="/">
               <motion.img
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 0.8 }}
-                src={logoUrl} alt="Logo" height="40" className="me-2 modern-logo"
+                src={logoUrl}
+                alt="Logo"
+                height="40"
+                className="me-2 modern-logo"
               />
-              <span className="fw-bold fs-4 tracking-tighter brand-text">MobiZone</span>
+              <span className="fw-bold fs-4 tracking-tighter brand-text">
+                MobiZone
+              </span>
             </Link>
 
             <ul className="navbar-nav d-none d-xl-flex flex-row gap-4 fw-semibold nav-links-container">
-              <li className="nav-item"><NavLink to="/" className="nav-link-custom">Home</NavLink></li>
-              <li className="nav-item"><NavLink to="/iphone" className="nav-link-custom">iPhone</NavLink></li>
-              <li className="nav-item"><NavLink to="/sumsing" className="nav-link-custom">Samsung</NavLink></li>
-              <li className="nav-item"><NavLink to="/vivo" className="nav-link-custom">Vivo</NavLink></li>
+              <li className="nav-item">
+                <NavLink to="/" className="nav-link-custom">
+                  Home
+                </NavLink>
+              </li>
+              {user && (
+                <li className="nav-item">
+                  <NavLink to={getDashboardLink()} className="nav-link-custom">
+                    Dashboard
+                  </NavLink>
+                </li>
+              )}
+              <li className="nav-item">
+                <NavLink to="/iphone" className="nav-link-custom">
+                  iPhone
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/sumsing" className="nav-link-custom">
+                  Samsung
+                </NavLink>
+              </li>
+              <li className="nav-item">
+                <NavLink to="/vivo" className="nav-link-custom">
+                  Vivo
+                </NavLink>
+              </li>
             </ul>
           </div>
 
@@ -95,7 +122,6 @@ function Navbar() {
                 <i className="bi bi-search"></i>
               </motion.button>
 
-
               <AnimatePresence>
                 {query && filtered.length > 0 && (
                   <motion.div
@@ -104,8 +130,13 @@ function Navbar() {
                     exit={{ opacity: 0, y: 10 }}
                     className="search-results-dropdown"
                   >
-                    {filtered.map(p => (
-                      <Link key={p.id} to={p.path} className="search-result-item" onClick={() => setQuery("")}>
+                    {filtered.map((p) => (
+                      <Link
+                        key={p.id}
+                        to={p.path}
+                        className="search-result-item"
+                        onClick={() => setQuery("")}
+                      >
                         <i className="bi bi-phone me-2"></i> {p.name}
                       </Link>
                     ))}
@@ -115,9 +146,8 @@ function Navbar() {
             </div>
           </div>
 
-          {/* RIGHT: Cart then Account */}
+          {/* RIGHT: Cart & Account */}
           <div className="d-flex align-items-center gap-4">
-
             {/* Cart Button with Blue/Black Circle */}
             <Link to="/cart" className="cart-circle-wrapper">
               <motion.div
@@ -132,8 +162,8 @@ function Navbar() {
               </motion.div>
             </Link>
 
-            {/* Account Dropdown with Circle */}
-            <Dropdown align="end" className="account-dropdown">
+            {/* Account Dropdown with Circle (Size matched with Cart) */}
+            <Dropdown align="end" className="account-dropdown no-caret">
               <Dropdown.Toggle as="div" className="account-toggle-circle">
                 <motion.div
                   whileHover={{ scale: 1.15, rotate: -10 }}
@@ -144,11 +174,19 @@ function Navbar() {
               </Dropdown.Toggle>
               <Dropdown.Menu className="account-menu-modern shadow-lg dropdown-menu-end mt-3 border-0">
                 {!user ? (
-                  <div className="p-2">
-                    <Dropdown.Item as={Link} to="/login" className="modern-dropdown-item rounded mb-1">
+                  <div className="p-2 ">
+                    <Dropdown.Item
+                      as={Link}
+                      to="/login"
+                      className="modern-dropdown-item rounded mb-1"
+                    >
                       <i className="bi bi-box-arrow-in-right me-2"></i> Login
                     </Dropdown.Item>
-                    <Dropdown.Item as={Link} to="/signup" className="modern-dropdown-item rounded">
+                    <Dropdown.Item
+                      as={Link}
+                      to="/signup"
+                      className="modern-dropdown-item rounded"
+                    >
                       <i className="bi bi-person-plus me-2"></i> Create Account
                     </Dropdown.Item>
                   </div>
@@ -158,19 +196,24 @@ function Navbar() {
                       <div className="fw-bold fs-6">{user.name}</div>
                       <div className="small opacity-75">{user.email}</div>
                     </div>
-                    <Dropdown.Item as={Link} to={getDashboardLink()} className="modern-dropdown-item rounded mb-1">
+                    <Dropdown.Item
+                      as={Link}
+                      to={getDashboardLink()}
+                      className="modern-dropdown-item rounded mb-1"
+                    >
                       <i className="bi bi-speedometer2 me-2"></i> Dashboard
                     </Dropdown.Item>
-                    <Dropdown.Item onClick={handleLogout} className="modern-dropdown-item rounded text-danger">
+                    <Dropdown.Item
+                      onClick={handleLogout}
+                      className="modern-dropdown-item rounded text-danger"
+                    >
                       <i className="bi bi-power me-2"></i> Logout
                     </Dropdown.Item>
                   </div>
                 )}
               </Dropdown.Menu>
             </Dropdown>
-
           </div>
-
         </div>
       </nav>
 
@@ -178,8 +221,8 @@ function Navbar() {
         .glassy-nav {
           background: rgba(224, 242, 255, 0.95) !important;
           backdrop-filter: blur(20px) saturate(180%);
-          border: 2px solid #0d6efd !important;
-          box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+          border: 1px solid #ccc !important;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
           transition: all 0.3s ease;
         }
 
@@ -228,19 +271,19 @@ function Navbar() {
           display: flex;
           align-items: center;
           width: 400px;
-          background: #f1f3f5 !important;
+          background: #f8f9fa !important;
           border-radius: 50px;
-          padding: 3px 3px 3px 20px;
+          padding: 5px 5px 5px 20px;
           transition: all 0.3s ease;
-          border: 2px solid #0d6efd !important;
-          box-shadow: inset 0 2px 5px rgba(0,0,0,0.05);
+          border: none !important;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.08) !important;
         }
 
 
         .search-wrapper:focus-within {
           background: #fff;
-          border-color: #0b5ed7 !important;
-          box-shadow: 0 0 20px rgba(13, 110, 253, 0.2);
+          border: none !important;
+          box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
           transform: translateY(-1px);
         }
 
@@ -313,6 +356,7 @@ function Navbar() {
         /* Icon Circles & Unique Hovers */
         .icon-circle {
           width: 45px;
+         
           height: 45px;
           border-radius: 50%;
           display: flex;
@@ -338,6 +382,7 @@ function Navbar() {
         }
 
         .circle-account {
+        
           background: #0d6efd;
           border: 1px solid rgba(255,255,255,0.2);
         }
@@ -345,6 +390,7 @@ function Navbar() {
         .circle-account:hover {
           background: #198754 !important; /* Green hover */
           box-shadow: 0 0 20px rgba(25, 135, 84, 0.4);
+          
         }
 
         .search-btn-circle:hover {
@@ -358,6 +404,7 @@ function Navbar() {
 
         .account-toggle-circle {
           cursor: pointer;
+          
         }
 
         .cart-badge-new {
@@ -373,8 +420,22 @@ function Navbar() {
           border: 2px solid white;
           box-shadow: 0 2px 8px rgba(255, 77, 77, 0.3);
         }
-      `}</style>
 
+        /* Essential Fix: Hide the dropdown arrow/caret */
+        .dropdown-toggle::after {
+          display: none !important;
+          content: none !important;
+        }
+        
+        .account-dropdown {
+          display: flex;
+          align-items: center;
+        }
+
+        .no-caret .dropdown-toggle::after {
+          display: none !important;
+        }
+      `}</style>
     </>
   );
 }

@@ -2,8 +2,10 @@ import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import { CartContext } from "../context/CartContext";
+import { AuthContext } from "../context/AuthContext";
 
 const Vivo = () => {
+  const { user } = useContext(AuthContext);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const { addToCart } = useContext(CartContext);
@@ -46,12 +48,18 @@ const Vivo = () => {
                 <h6 className="fw-bold mb-2">{p.name}</h6>
                 <p className="small text-muted flex-grow-1">{p.description.substring(0, 60)}...</p>
                 <div className="fw-bold mb-3 fs-5" style={{ color: "#00b4d8" }}>Rs.{p.price}</div>
-                <button 
-                  className="btn btn-3d-premium px-4 mx-auto d-block"
-                  onClick={() => addToCart({ id: p._id, name: p.name, price: p.price.toString(), image: p.image })}
-                >
-                  ADD TO CART
-                </button>
+                
+                {/* Hide purchase button for admins */}
+                {(!user || user.role === "user") ? (
+                  <button 
+                    className="btn btn-3d-premium px-4 mx-auto d-block"
+                    onClick={() => addToCart({ id: p._id, name: p.name, price: p.price.toString(), image: p.image })}
+                  >
+                    ADD TO CART
+                  </button>
+                ) : (
+                  <div className="small text-muted py-2">Preview Mode (Admin)</div>
+                )}
               </div>
             </div>
           </motion.div>
