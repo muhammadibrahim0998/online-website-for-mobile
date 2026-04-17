@@ -108,3 +108,51 @@ export const simulatedTransfer = async (req, res) => {
     res.status(500).json({ error: "Transfer simulation failed" });
   }
 };
+
+// 📊 Get Sales Statistics (Admin)
+export const getSalesStats = async (req, res) => {
+  try {
+    const paidOrders = await Order.find({ paymentStatus: "paid" });
+    
+    const now = new Date();
+    const today = now.toLocaleDateString();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    let todayTotal = 0;
+    let monthTotal = 0;
+    let yearTotal = 0;
+
+    paidOrders.forEach(order => {
+      const orderDate = new Date(order.createdAt);
+      const amount = Number(order.totalAmount);
+
+      // Yearly
+      if (orderDate.getFullYear() === currentYear) {
+        yearTotal += amount;
+        
+        // Monthly
+        if (orderDate.getMonth() === currentMonth) {
+          monthTotal += amount;
+          
+          // Daily
+          if (orderDate.toLocaleDateString() === today) {
+            todayTotal += amount;
+          }
+        }
+      }
+    });
+
+    const totalOrdersCount = await Order.countDocuments();
+
+    res.json({
+      today: todayTotal,
+      month: monthTotal,
+      year: yearTotal,
+      totalOrders: totalOrdersCount
+    });
+  } catch (error) {
+    console.error("Sales stats error:", error);
+    res.status(500).json({ message: "Error fetching sales stats" });
+  }
+};

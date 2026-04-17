@@ -6,6 +6,7 @@ import {
   getMyOrders,
   updateOrderStatus,
   simulatedTransfer,
+  getSalesStats,
 } from "../controllers/orderController.js";
 
 const router = express.Router();
@@ -35,6 +36,9 @@ router.get("/", protect, authorize("superadmin", "shopadmin"), getOrders);
 
 // Admin: update order status
 router.put("/:id", protect, authorize("superadmin", "shopadmin"), updateOrderStatus);
+
+// Admin: sales stats
+router.get("/sales-stats", protect, authorize("superadmin", "shopadmin"), getSalesStats);
 
 // P2P: simulated transfer
 router.post("/simulated-transfer", simulatedTransfer);
